@@ -1,2 +1,5 @@
 __pycache__/
 scratch/*
+corr/
+
+./*.nii.gz
