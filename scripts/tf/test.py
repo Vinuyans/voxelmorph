@@ -43,24 +43,37 @@ import tensorflow as tf
 
 # parse commandline args
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpu', help='GPU number - if not supplied, CPU is used')
-parser.add_argument('--model', required=True, help='VxmDense model file')
-parser.add_argument('--pairs', required=True, help='path to list of image pairs to register')
-parser.add_argument('--img-suffix', help='input image file suffix')
-parser.add_argument('--seg-suffix', help='input seg file suffix')
-parser.add_argument('--img-prefix', help='input image file prefix')
-parser.add_argument('--seg-prefix', help='input seg file prefix')
-parser.add_argument('--labels', help='optional label list to compute dice for (in npy format)')
-parser.add_argument('--multichannel', action='store_true',
-                    help='specify that data has multiple channels')
+parser.add_argument("--gpu", help="GPU number - if not supplied, CPU is used")
+parser.add_argument("--model", required=True, help="VxmDense model file")
+parser.add_argument(
+    "--pairs", required=True, help="path to list of image pairs to register"
+)
+parser.add_argument("--img-suffix", help="input image file suffix")
+parser.add_argument("--seg-suffix", help="input seg file suffix")
+parser.add_argument("--img-prefix", help="input image file prefix")
+parser.add_argument("--seg-prefix", help="input seg file prefix")
+parser.add_argument(
+    "--labels", help="optional label list to compute dice for (in npy format)"
+)
+parser.add_argument(
+    "--multichannel",
+    action="store_true",
+    help="specify that data has multiple channels",
+)
 args = parser.parse_args()
 
 # sanity check on input pairs
 if args.img_prefix == args.seg_prefix and args.img_suffix == args.seg_suffix:
-    print('Error: Must provide a differing file suffix and/or prefix for images and segs.')
+    print(
+        "Error: Must provide a differing file suffix and/or prefix for images and segs."
+    )
     exit(1)
-img_pairs = vxm.py.utils.read_pair_list(args.pairs, prefix=args.img_prefix, suffix=args.img_suffix)
-seg_pairs = vxm.py.utils.read_pair_list(args.pairs, prefix=args.seg_prefix, suffix=args.seg_suffix)
+img_pairs = vxm.py.utils.read_pair_list(
+    args.pairs, prefix=args.img_prefix, suffix=args.img_suffix
+)
+seg_pairs = vxm.py.utils.read_pair_list(
+    args.pairs, prefix=args.seg_prefix, suffix=args.seg_suffix
+)
 
 # device handling
 device, nb_devices = vxm.tf.utils.setup_device(args.gpu)
@@ -76,26 +89,35 @@ reg_times = []
 dice_means = []
 
 with tf.device(device):
-
     # load model and build nearest-neighbor transfer model
     model = vxm.networks.VxmDense.load(args.model, input_model=None)
     registration_model = model.get_registration_model()
     inshape = registration_model.inputs[0].shape[1:-1]
-    transform_model = vxm.networks.Transform(inshape, interp_method='nearest')
+    transform_model = vxm.networks.Transform(inshape, interp_method="nearest")
 
     for i in range(len(img_pairs)):
-
         # load moving image and seg
         moving_vol = vxm.py.utils.load_volfile(
-            img_pairs[i][0], np_var='vol', add_batch_axis=True, add_feat_axis=add_feat_axis)
+            img_pairs[i][0],
+            np_var="vol",
+            add_batch_axis=True,
+            add_feat_axis=add_feat_axis,
+        )
         moving_seg = vxm.py.utils.load_volfile(
-            seg_pairs[i][0], np_var='seg', add_batch_axis=True, add_feat_axis=add_feat_axis)
+            seg_pairs[i][0],
+            np_var="seg",
+            add_batch_axis=True,
+            add_feat_axis=add_feat_axis,
+        )
 
         # load fixed image and seg
         fixed_vol = vxm.py.utils.load_volfile(
-            img_pairs[i][1], np_var='vol', add_batch_axis=True, add_feat_axis=add_feat_axis)
-        fixed_seg = vxm.py.utils.load_volfile(
-            seg_pairs[i][1], np_var='seg')
+            img_pairs[i][1],
+            np_var="vol",
+            add_batch_axis=True,
+            add_feat_axis=add_feat_axis,
+        )
+        fixed_seg = vxm.py.utils.load_volfile(seg_pairs[i][1], np_var="seg")
 
         # predict warp and time
         start = time.time()
@@ -111,11 +133,14 @@ with tf.device(device):
         # compute volume overlap (dice)
         overlap = vxm.py.utils.dice(warped_seg, fixed_seg, labels=labels)
         dice_means.append(np.mean(overlap))
-        print('Pair %d    Reg Time: %.4f    Dice: %.4f +/- %.4f' % (i + 1, reg_time,
-                                                                    np.mean(overlap),
-                                                                    np.std(overlap)))
+        print(
+            "Pair %d    Reg Time: %.4f    Dice: %.4f +/- %.4f"
+            % (i + 1, reg_time, np.mean(overlap), np.std(overlap))
+        )
 
 print()
-print('Avg Reg Time: %.4f +/- %.4f  (skipping first prediction)' % (np.mean(reg_times),
-                                                                    np.std(reg_times)))
-print('Avg Dice: %.4f +/- %.4f' % (np.mean(dice_means), np.std(dice_means)))
+print(
+    "Avg Reg Time: %.4f +/- %.4f  (skipping first prediction)"
+    % (np.mean(reg_times), np.std(reg_times))
+)
+print("Avg Dice: %.4f +/- %.4f" % (np.mean(dice_means), np.std(dice_means)))
