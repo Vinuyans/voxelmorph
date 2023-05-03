@@ -1,0 +1,6 @@
+Dockerfile
+__pycache__/
+scratch/*
+corr/
+scans/
+/*.nii.gz
