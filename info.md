@@ -3,8 +3,12 @@
 Script to register 2 scans.
 
 ```bash
-python scripts/tf/register.py --moving ./data/test_scan.npz --fixed ./data/atlas.npz --model ./data/brains-dice-vel-0.5-res-16-256f.h5 --moved moved3.nii.gz --warp warp3.nii.gz
+python scripts/tf/register.py --moving ./data/test_scan.npz --fixed ./data/modified_average_205.nii.gz -
+-model ./data/brains-dice-vel-0.5-res-16-256f.h5 --moved test.nii.gz --warp test-warp.nii.gz
 ```
+
+
+python /voxelmorph/scripts/tf/register.py --moving /voxelmorph/scans/sub-0003002.nii.gz --fixed /voxelmorph/data/modified_average_205.nii.gz --model /voxelmorph/data/brains-dice-vel-0.5-res-16-256f.h5 --moved /voxelmorph/nifty/test.nii.gz --warp /voxelmorph/nifty/test-warp.nii.gz
 
 - **--moving**: MRI scans: Scan to deform to fit on the fixed
 - **--fixed**: MRI scans: Fixed scan that the moving scan will deform to match

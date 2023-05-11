@@ -38,14 +38,19 @@ import tensorflow as tf
 
 # parse commandline args
 parser = argparse.ArgumentParser()
-parser.add_argument('--moving', required=True, help='moving image (source) filename')
-parser.add_argument('--fixed', required=True, help='fixed image (target) filename')
-parser.add_argument('--moved', required=True, help='warped image output filename')
-parser.add_argument('--model', required=True, help='keras model for nonlinear registration')
-parser.add_argument('--warp', help='output warp deformation filename')
-parser.add_argument('-g', '--gpu', help='GPU number(s) - if not supplied, CPU is used')
-parser.add_argument('--multichannel', action='store_true',
-                    help='specify that data has multiple channels')
+parser.add_argument("--moving", required=True, help="moving image (source) filename")
+parser.add_argument("--fixed", required=True, help="fixed image (target) filename")
+parser.add_argument("--moved", required=True, help="warped image output filename")
+parser.add_argument(
+    "--model", required=True, help="keras model for nonlinear registration"
+)
+parser.add_argument("--warp", help="output warp deformation filename")
+parser.add_argument("-g", "--gpu", help="GPU number(s) - if not supplied, CPU is used")
+parser.add_argument(
+    "--multichannel",
+    action="store_true",
+    help="specify that data has multiple channels",
+)
 args = parser.parse_args()
 
 # tensorflow device handling
@@ -53,9 +58,12 @@ device, nb_devices = vxm.tf.utils.setup_device(args.gpu)
 
 # load moving and fixed images
 add_feat_axis = not args.multichannel
-moving = vxm.py.utils.load_volfile(args.moving, add_batch_axis=True, add_feat_axis=add_feat_axis)
+moving = vxm.py.utils.load_volfile(
+    args.moving, add_batch_axis=True, add_feat_axis=add_feat_axis
+)
 fixed, fixed_affine = vxm.py.utils.load_volfile(
-    args.fixed, add_batch_axis=True, add_feat_axis=add_feat_axis, ret_affine=True)
+    args.fixed, add_batch_axis=True, add_feat_axis=add_feat_axis, ret_affine=True
+)
 
 inshape = moving.shape[1:-1]
 nb_feats = moving.shape[-1]

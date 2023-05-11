@@ -75,13 +75,15 @@ RUN pip install pip --upgrade
 
 COPY --from=common /opt/valgrind-${VALGRIND_VERSION}+verrou-dev /opt/valgrind-${VALGRIND_VERSION}+verrou-dev
 
-COPY . ./voxelmorph/
-WORKDIR /voxelmorph
-
 RUN pip install voxelmorph
 RUN pip install numpy==1.20
 RUN pip install tensorflow
 RUN pip install datalad
 
 ENV PATH="/opt/valgrind-${VALGRIND_VERSION}+verrou-dev/bin:$PATH"
+
+COPY . ./voxelmorph/
+COPY ./voxelmorph/py/utils.py /usr/local/lib/python3.8/site-packages/voxelmorph/py
+WORKDIR /voxelmorph
+RUN chmod -R o+w /voxelmorph
 ENTRYPOINT [ "/bin/bash"]
