@@ -3,8 +3,7 @@
 Script to register 2 scans.
 
 ```bash
-python scripts/tf/register.py --moving ./data/test_scan.npz --fixed ./data/modified_average_205.nii.gz -
--model ./data/brains-dice-vel-0.5-res-16-256f.h5 --moved test.nii.gz --warp test-warp.nii.gz
+python scripts/tf/register.py --moving ./data/filename_normalized.nii.gz --fixed ./data/modified_average_205.nii.gz --model ./data/brains-dice-vel-0.5-res-16-256f.h5 --moved test.nii.gz --warp test-warp.nii.gz
 ```
 
 
