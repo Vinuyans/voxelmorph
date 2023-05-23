@@ -79,11 +79,18 @@ RUN pip install voxelmorph
 RUN pip install numpy==1.20
 RUN pip install tensorflow
 RUN pip install datalad
+RUN pip install torchio
+RUN pip install click
+RUN pip install pycrunch-trace
+RUN pip install protobuf==3.20
 
 ENV PATH="/opt/valgrind-${VALGRIND_VERSION}+verrou-dev/bin:$PATH"
-
 COPY . ./voxelmorph/
 COPY ./voxelmorph/py/utils.py /usr/local/lib/python3.8/site-packages/voxelmorph/py
 WORKDIR /voxelmorph
 RUN chmod -R o+w /voxelmorph
+
+SHELL ["/bin/bash", "-c"]
+RUN source /opt/valgrind-${VALGRIND_VERSION}+verrou-dev/env.sh
+
 ENTRYPOINT [ "/bin/bash"]

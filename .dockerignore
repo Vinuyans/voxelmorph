@@ -4,3 +4,6 @@ scratch/*
 corr/
 scans/
 /*.nii.gz
+normalized/
+pycrunc*/
+reprozip/

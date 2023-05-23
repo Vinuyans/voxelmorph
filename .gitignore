@@ -2,11 +2,20 @@ __pycache__/
 .vscode
 .devcontainer
 
-scratch/*
+#Scans
+crop-scans/
 corr/
 scans/
 /*.nii.gz
-data/shapes-dice-vel-3-res-8-16-32-256f.h5
 data/modified_average_205.nii.gz
+norm.zip
+
+# Models
+data/shapes-dice-vel-3-res-8-16-32-256f.h5
 data/brains-dice-vel-0.5-res-16-256f.h5
-.devcontainer/devcontainer.json
+
+#Telemetry
+pycrunch/
+reprozip/
+*.rpz
+load_weight-trace
