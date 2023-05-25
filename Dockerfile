@@ -84,13 +84,15 @@ RUN pip install click
 RUN pip install pycrunch-trace
 RUN pip install protobuf==3.20
 
-ENV PATH="/opt/valgrind-${VALGRIND_VERSION}+verrou-dev/bin:$PATH"
 COPY . ./voxelmorph/
 COPY ./voxelmorph/py/utils.py /usr/local/lib/python3.8/site-packages/voxelmorph/py
 WORKDIR /voxelmorph
 RUN chmod -R o+w /voxelmorph
 
-SHELL ["/bin/bash", "-c"]
-RUN source /opt/valgrind-${VALGRIND_VERSION}+verrou-dev/env.sh
-
-ENTRYPOINT [ "/bin/bash"]
+ENV PATH=/opt/valgrind-3.20.0+verrou-dev/bin:${PATH}
+ENV PYTHONPATH=/opt/valgrind-3.20.0+verrou-dev/lib/python3.8/site-packages:/opt/valgrind-3.20.0+verrou-dev:/lib/python3.8/site-packages:
+ENV MANPATH=/opt/valgrind-3.20.0+verrou-dev/share/man:${MANPATH}
+ENV CPATH=/opt/valgrind-3.20.0+verrou-dev/include:${CPATH}
+ENV VERROU_COMPILED_WITH_FMA=yes
+ENV VERROU_COMPILED_WITH_QUAD=yes
+ENTRYPOINT ["/bin/bash"]

@@ -4,7 +4,6 @@ __pycache__/
 
 #Scans
 crop-scans/
-corr/
 scans/
 /*.nii.gz
 data/modified_average_205.nii.gz
@@ -15,7 +14,4 @@ data/shapes-dice-vel-3-res-8-16-32-256f.h5
 data/brains-dice-vel-0.5-res-16-256f.h5
 
 #Telemetry
-pycrunch/
-reprozip/
-*.rpz
-load_weight-trace
+telemetry/

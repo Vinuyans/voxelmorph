@@ -3,7 +3,6 @@ __pycache__/
 scratch/*
 corr/
 scans/
+crop-scans/
 /*.nii.gz
-normalized/
-pycrunc*/
-reprozip/
+telemetry/
