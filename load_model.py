@@ -28,6 +28,14 @@ distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, e
 implied. See the License for the specific language governing permissions and limitations under the
 License.
 """
+import sys
+
+sys.path.append("/voxelmorph/synchroLib")
+from verrouPyBinding import bindingVerrouCLib
+
+verrouCBindingLib = "/voxelmorph/synchroLib/verrouCBindingLib.so"
+bindVerrou = bindingVerrouCLib(verrouCBindingLib)
+bindVerrou.verrou_stop_instrumentation()
 
 import os
 import argparse
@@ -70,4 +78,8 @@ nb_feats = moving.shape[-1]
 with tf.device(device):
     # load model and predict
     config = dict(inshape=inshape, input_model=None)
-    warp = vxm.networks.VxmDense.load(args.model, **config)
+    model = vxm.networks.VxmDense.load(args.model, **config)
+    print("model loaded")
+    bindVerrou.verrou_display_counters()
+    print("avt a binding fp: ", bindVerrou.verrou_count_fp_instrumented())
+    print("avt a binding not fp: ", bindVerrou.verrou_count_fp_not_instrumented())

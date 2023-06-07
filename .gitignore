@@ -8,6 +8,7 @@ scans/
 /*.nii.gz
 data/modified_average_205.nii.gz
 norm.zip
+norm
 
 # Models
 data/shapes-dice-vel-3-res-8-16-32-256f.h5
