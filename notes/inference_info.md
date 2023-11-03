@@ -69,7 +69,7 @@ Both models are also available:
 
 ## Verrou
 
-Verrou is an instrumentation tool that uses MCA arithmetics to perturbe floating point operations. It can be used to test teh accuracy and stability of applications. The source code can be found [here](https://github.com/edf-hpc/verrou) and the docs [here](https://edf-hpc.github.io/verrou/vr-manual.html#idm6469)
+Verrou is an instrumentation tool that uses MCA arithmetics to perturbe floating point operations. It can be used to test the accuracy and stability of applications. The source code can be found [here](https://github.com/edf-hpc/verrou) and the docs [here](https://edf-hpc.github.io/verrou/vr-manual.html#idm6469)
 
 Running the SynthMorph model with Verrou produced fatal exception due to Verrou perturbing functions that are too critical. Therefore we had to find what these functions are and where they're located to be able to exclude them
 
@@ -133,4 +133,13 @@ valgrind --tool=verrou --rounding-mode=random \
 ```bash
 # Since there were no output, we couldn't compare anything.
 # If you need to run this yourself, save the weights of the model when loading and compare it with the baseline results.
+```
+## Final Verrou Command
+Here is the outline of the final command run to get the results of the experiment. Note that it was run using a Singularity container on a compute server running SLURM.
+```bash
+singularity exec --writable-tmpfs --env VERROU_LIBM_ROUNDING_MODE=random --env VERROU_ROUNDING_MODE=random --env LD_PRELOAD=/voxelmorph/interlibmath.so\
+      synthmorph.sif valgrind --tool=verrou --exclude=/voxelmorph/libm.tex --instr-atstart=no\
+      python3 /voxelmorph/scripts/tf/register.py --moving /voxelmorph/scans/"{input scan}"\
+      --fixed /voxelmorph/data/norm-average_mni305.mgz --model /voxelmorph/data/brains-dice-vel-0.5-res-16-256f.h5\
+      --moved /voxelmorph/nifty/${name}/moved${iteration}.nii.gz --warp /voxelmorph/nifty/${name}/warp${iteration}.nii.gz\
 ```

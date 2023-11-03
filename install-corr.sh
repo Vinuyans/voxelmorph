@@ -1,4 +1,7 @@
 #!/bin/bash
+# datalad install the corr dataset into a folder called /corr
+# Dataset foudn at http://datasets.datalad.org/?dir=/corr/RawDataBIDS/
+
 file_paths=(
   "./corr/RawDataBIDS/BMB_1/sub-0003002/ses-1/anat/sub-0003002_ses-1_run-1_T1w.nii.gz"
   "./corr/RawDataBIDS/BNU_1/sub-0025879/ses-2/anat/sub-0025879_ses-2_run-1_T1w.nii.gz"
@@ -35,6 +38,12 @@ file_paths=(
   "./corr/RawDataBIDS/Utah_2/sub-0026017/ses-8/anat/sub-0026017_ses-8_run-1_T1w.nii.gz"
   "./corr/RawDataBIDS/UWM/sub-0027268/ses-1/anat/sub-0027268_ses-1_run-1_T1w.nii.gz"
   "./corr/RawDataBIDS/XHCUMS/sub-0025993/ses-4/anat/sub-0025993_ses-4_run-1_T1w.nii.gz"
+  "./corr/RawDataBIDS/BMB_1/sub-0003010/ses-1/anat/sub-0003010_ses-1_run-1_T1w.nii.gz"
+  "./corr/RawDataBIDS/HNU_1/sub-0025429/ses-2/anat/sub-0025429_ses-2_run-1_T1w.nii.gz"
+  "./corr/RawDataBIDS/BNU_2/sub-0025946/ses-1/anat/sub-0025946_ses-1_run-1_T1w.nii.gz"
+  "./corr/RawDataBIDS/BNU_3/sub-0027085/ses-1/anat/sub-0027085_ses-1_run-1_T1w.nii.gz"
+  "./corr/RawDataBIDS/DC_1/sub-0027402/ses-1/anat/sub-0027402_ses-1_run-1_T1w.nii.gz"
+
 )
 for file in "${file_paths[@]}"; do
   :

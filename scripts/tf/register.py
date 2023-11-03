@@ -29,13 +29,14 @@ implied. See the License for the specific language governing permissions and lim
 License.
 """
 import sys
+import tracemalloc
+tracemalloc.start()
+# sys.path.append("/voxelmorph/synchroLib")
+# from verrouPyBinding import bindingVerrouCLib
 
-sys.path.append("/voxelmorph/synchroLib")
-from verrouPyBinding import bindingVerrouCLib
-
-verrouCBindingLib = "/voxelmorph/synchroLib/verrouCBindingLib.so"
-bindVerrou = bindingVerrouCLib(verrouCBindingLib)
-bindVerrou.verrou_stop_instrumentation()
+# verrouCBindingLib = "/voxelmorph/synchroLib/verrouCBindingLib.so"
+# bindVerrou = bindingVerrouCLib(verrouCBindingLib)
+# bindVerrou.verrou_stop_instrumentation()
 
 import os
 import argparse
@@ -81,10 +82,10 @@ with tf.device(device):
     config = dict(inshape=inshape, input_model=None)
     model = vxm.networks.VxmDense.load(args.model, **config)
 
-    bindVerrou.verrou_start_instrumentation()
+    # bindVerrou.verrou_start_instrumentation()
     warp = model.register(moving, fixed)
     moved = vxm.networks.Transform(inshape, nb_feats=nb_feats).predict([moving, warp])
-    bindVerrou.verrou_stop_instrumentation()
+    # bindVerrou.verrou_stop_instrumentation()
 
 # save warp
 if args.warp:
@@ -92,3 +93,5 @@ if args.warp:
 
 # save moved image
 vxm.py.utils.save_volfile(moved.squeeze(), args.moved, fixed_affine)
+# print(tracemalloc.get_traced_memory())
+# tracemalloc.stop()

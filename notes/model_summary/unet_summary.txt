@@ -1,0 +1,415 @@
+__________________________________________________________________________________________________
+Model: "vxm_dense_unet"
+__________________________________________________________________________________________________
+ Layer (type)                Output Shape                 Param #   Connected to                  
+==================================================================================================
+ labels_input_0 (InputLayer  [(None, 160, 192, 224, 1)]   0         []                            
+ )                                                                                                
+                                                                                                  
+ labels_input_1 (InputLayer  [(None, 160, 192, 224, 1)]   0         []                            
+ )                                                                                                
+                                                                                                  
+ tf.cast (TFOpLambda)        (None, 160, 192, 224, 1)     0         ['labels_input_0[0][0]']      
+                                                                                                  
+ tf.cast_3 (TFOpLambda)      (None, 160, 192, 224, 1)     0         ['labels_input_1[0][0]']      
+                                                                                                  
+ tf.compat.v1.gather (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.cast[0][0]']             
+ ambda)                                                                                           
+                                                                                                  
+ tf.compat.v1.gather_2 (TFO  (None, 160, 192, 224, 1)     0         ['tf.cast_3[0][0]']           
+ pLambda)                                                                                         
+                                                                                                  
+ vel_0 (Lambda)              (None, 80, 96, 112, 3)       0         ['tf.compat.v1.gather[0][0]'] 
+                                                                                                  
+ vel_1 (Lambda)              (None, 80, 96, 112, 3)       0         ['tf.compat.v1.gather_2[0][0]'
+                                                                    ]                             
+                                                                                                  
+ vec_int_0 (VecInt)          (None, 80, 96, 112, 3)       0         ['vel_0[0][0]']               
+                                                                                                  
+ vec_int_1 (VecInt)          (None, 80, 96, 112, 3)       0         ['vel_1[0][0]']               
+                                                                                                  
+ rescale_values (RescaleVal  (None, 80, 96, 112, 3)       0         ['vec_int_0[0][0]']           
+ ues)                                                                                             
+                                                                                                  
+ rescale_values_1 (RescaleV  (None, 80, 96, 112, 3)       0         ['vec_int_1[0][0]']           
+ alues)                                                                                           
+                                                                                                  
+ def_0 (Resize)              (None, 160, 192, 224, 3)     0         ['rescale_values[0][0]']      
+                                                                                                  
+ def_1 (Resize)              (None, 160, 192, 224, 3)     0         ['rescale_values_1[0][0]']    
+                                                                                                  
+ trans_0 (SpatialTransforme  (None, 160, 192, 224, 1)     0         ['tf.compat.v1.gather[0][0]', 
+ r)                                                                  'def_0[0][0]']               
+                                                                                                  
+ tf.compat.v1.shape (TFOpLa  (5,)                         0         ['tf.cast[0][0]']             
+ mbda)                                                                                            
+                                                                                                  
+ trans_1 (SpatialTransforme  (None, 160, 192, 224, 1)     0         ['tf.compat.v1.gather_2[0][0]'
+ r)                                                                 , 'def_1[0][0]']              
+                                                                                                  
+ tf.compat.v1.shape_5 (TFOp  (5,)                         0         ['tf.cast_3[0][0]']           
+ Lambda)                                                                                          
+                                                                                                  
+ tf.cast_1 (TFOpLambda)      (None, 160, 192, 224, 1)     0         ['trans_0[0][0]']             
+                                                                                                  
+ tf.__operators__.getitem (  ()                           0         ['tf.compat.v1.shape[0][0]']  
+ SlicingOpLambda)                                                                                 
+                                                                                                  
+ tf.cast_4 (TFOpLambda)      (None, 160, 192, 224, 1)     0         ['trans_1[0][0]']             
+                                                                                                  
+ tf.__operators__.getitem_5  ()                           0         ['tf.compat.v1.shape_5[0][0]']
+  (SlicingOpLambda)                                                                               
+                                                                                                  
+ tf.__operators__.add (TFOp  (None, 160, 192, 224, 1)     0         ['tf.cast_1[0][0]']           
+ Lambda)                                                                                          
+                                                                                                  
+ tf.random.uniform_2 (TFOpL  (None, 1, 1, 1, 1)           0         ['tf.__operators__.getitem[0][
+ ambda)                                                             0]']                          
+                                                                                                  
+ tf.__operators__.add_2 (TF  (None, 160, 192, 224, 1)     0         ['tf.cast_4[0][0]']           
+ OpLambda)                                                                                        
+                                                                                                  
+ tf.random.uniform_5 (TFOpL  (None, 1, 1, 1, 1)           0         ['tf.__operators__.getitem_5[0
+ ambda)                                                             ][0]']                        
+                                                                                                  
+ tf.compat.v1.shape_1 (TFOp  (5,)                         0         ['tf.cast_1[0][0]']           
+ Lambda)                                                                                          
+                                                                                                  
+ tf.random.uniform_1 (TFOpL  (None, 1, 44)                0         ['tf.__operators__.getitem[0][
+ ambda)                                                             0]']                          
+                                                                                                  
+ tf.identity (TFOpLambda)    (None, 160, 192, 224, 1)     0         ['tf.__operators__.add[0][0]']
+                                                                                                  
+ tf.__operators__.eq (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.cast_1[0][0]']           
+ ambda)                                                                                           
+                                                                                                  
+ tf.math.less (TFOpLambda)   (None, 1, 1, 1, 1)           0         ['tf.random.uniform_2[0][0]'] 
+                                                                                                  
+ tf.compat.v1.shape_6 (TFOp  (5,)                         0         ['tf.cast_4[0][0]']           
+ Lambda)                                                                                          
+                                                                                                  
+ tf.random.uniform_4 (TFOpL  (None, 1, 44)                0         ['tf.__operators__.getitem_5[0
+ ambda)                                                             ][0]']                        
+                                                                                                  
+ tf.identity_1 (TFOpLambda)  (None, 160, 192, 224, 1)     0         ['tf.__operators__.add_2[0][0]
+                                                                    ']                            
+                                                                                                  
+ tf.__operators__.eq_1 (TFO  (None, 160, 192, 224, 1)     0         ['tf.cast_4[0][0]']           
+ pLambda)                                                                                         
+                                                                                                  
+ tf.math.less_1 (TFOpLambda  (None, 1, 1, 1, 1)           0         ['tf.random.uniform_5[0][0]'] 
+ )                                                                                                
+                                                                                                  
+ tf.random.normal (TFOpLamb  (None, 160, 192, 224, 1)     0         ['tf.compat.v1.shape_1[0][0]']
+ da)                                                                                              
+                                                                                                  
+ lambda_1 (Lambda)           (None, 160, 192, 224, 1)     0         ['tf.random.uniform_1[0][0]', 
+                                                                     'tf.identity[0][0]']         
+                                                                                                  
+ tf.random.uniform (TFOpLam  (None, 1, 44)                0         ['tf.__operators__.getitem[0][
+ bda)                                                               0]']                          
+                                                                                                  
+ tf.math.logical_and (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.__operators__.eq[0][0]', 
+ ambda)                                                              'tf.math.less[0][0]']        
+                                                                                                  
+ tf.random.normal_2 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.compat.v1.shape_6[0][0]']
+ mbda)                                                                                            
+                                                                                                  
+ lambda_5 (Lambda)           (None, 160, 192, 224, 1)     0         ['tf.random.uniform_4[0][0]', 
+                                                                     'tf.identity_1[0][0]']       
+                                                                                                  
+ tf.random.uniform_3 (TFOpL  (None, 1, 44)                0         ['tf.__operators__.getitem_5[0
+ ambda)                                                             ][0]']                        
+                                                                                                  
+ tf.math.logical_and_1 (TFO  (None, 160, 192, 224, 1)     0         ['tf.__operators__.eq_1[0][0]'
+ pLambda)                                                           , 'tf.math.less_1[0][0]']     
+                                                                                                  
+ tf.math.multiply (TFOpLamb  (None, 160, 192, 224, 1)     0         ['tf.random.normal[0][0]',    
+ da)                                                                 'lambda_1[0][0]']            
+                                                                                                  
+ lambda (Lambda)             (None, 160, 192, 224, 1)     0         ['tf.random.uniform[0][0]',   
+                                                                     'tf.identity[0][0]']         
+                                                                                                  
+ tf.cast_2 (TFOpLambda)      (None, 160, 192, 224, 1)     0         ['tf.math.logical_and[0][0]'] 
+                                                                                                  
+ tf.math.multiply_3 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.random.normal_2[0][0]',  
+ mbda)                                                               'lambda_5[0][0]']            
+                                                                                                  
+ lambda_4 (Lambda)           (None, 160, 192, 224, 1)     0         ['tf.random.uniform_3[0][0]', 
+                                                                     'tf.identity_1[0][0]']       
+                                                                                                  
+ tf.cast_5 (TFOpLambda)      (None, 160, 192, 224, 1)     0         ['tf.math.logical_and_1[0][0]'
+                                                                    ]                             
+                                                                                                  
+ tf.__operators__.add_1 (TF  (None, 160, 192, 224, 1)     0         ['tf.math.multiply[0][0]',    
+ OpLambda)                                                           'lambda[0][0]']              
+                                                                                                  
+ tf.math.subtract (TFOpLamb  (None, 160, 192, 224, 1)     0         ['tf.cast_2[0][0]']           
+ da)                                                                                              
+                                                                                                  
+ tf.__operators__.add_3 (TF  (None, 160, 192, 224, 1)     0         ['tf.math.multiply_3[0][0]',  
+ OpLambda)                                                           'lambda_4[0][0]']            
+                                                                                                  
+ tf.math.subtract_1 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.cast_5[0][0]']           
+ mbda)                                                                                            
+                                                                                                  
+ tf.math.multiply_1 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.__operators__.add_1[0][0]
+ mbda)                                                              ',                            
+                                                                     'tf.math.subtract[0][0]']    
+                                                                                                  
+ tf.math.multiply_4 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.__operators__.add_3[0][0]
+ mbda)                                                              ',                            
+                                                                     'tf.math.subtract_1[0][0]']  
+                                                                                                  
+ tf.compat.v1.transpose (TF  (None, 1, 160, 192, 224)     0         ['tf.math.multiply_1[0][0]']  
+ OpLambda)                                                                                        
+                                                                                                  
+ tf.compat.v1.transpose_2 (  (None, 1, 160, 192, 224)     0         ['tf.math.multiply_4[0][0]']  
+ TFOpLambda)                                                                                      
+                                                                                                  
+ tf.compat.v1.shape_3 (TFOp  (5,)                         0         ['tf.compat.v1.transpose[0][0]
+ Lambda)                                                            ']                            
+                                                                                                  
+ tf.compat.v1.shape_8 (TFOp  (5,)                         0         ['tf.compat.v1.transpose_2[0][
+ Lambda)                                                            0]']                          
+                                                                                                  
+ tf.__operators__.getitem_2  (2,)                         0         ['tf.compat.v1.shape_3[0][0]']
+  (SlicingOpLambda)                                                                               
+                                                                                                  
+ tf.compat.v1.shape_2 (TFOp  (5,)                         0         ['tf.math.multiply_1[0][0]']  
+ Lambda)                                                                                          
+                                                                                                  
+ tf.__operators__.getitem_7  (2,)                         0         ['tf.compat.v1.shape_8[0][0]']
+  (SlicingOpLambda)                                                                               
+                                                                                                  
+ tf.compat.v1.shape_7 (TFOp  (5,)                         0         ['tf.math.multiply_4[0][0]']  
+ Lambda)                                                                                          
+                                                                                                  
+ tf.math.reduce_prod (TFOpL  (1,)                         0         ['tf.__operators__.getitem_2[0
+ ambda)                                                             ][0]']                        
+                                                                                                  
+ tf.__operators__.getitem_1  (3,)                         0         ['tf.compat.v1.shape_2[0][0]']
+  (SlicingOpLambda)                                                                               
+                                                                                                  
+ tf.math.reduce_prod_1 (TFO  (1,)                         0         ['tf.__operators__.getitem_7[0
+ pLambda)                                                           ][0]']                        
+                                                                                                  
+ tf.__operators__.getitem_6  (3,)                         0         ['tf.compat.v1.shape_7[0][0]']
+  (SlicingOpLambda)                                                                               
+                                                                                                  
+ tf.concat (TFOpLambda)      (5,)                         0         ['tf.math.reduce_prod[0][0]', 
+                                                                     'tf.__operators__.getitem_1[0
+                                                                    ][0]']                        
+                                                                                                  
+ tf.concat_2 (TFOpLambda)    (5,)                         0         ['tf.math.reduce_prod_1[0][0]'
+                                                                    , 'tf.__operators__.getitem_6[
+                                                                    0][0]']                       
+                                                                                                  
+ tf.reshape (TFOpLambda)     (None, 160, 192, 224, 1)     0         ['tf.compat.v1.transpose[0][0]
+                                                                    ',                            
+                                                                     'tf.concat[0][0]']           
+                                                                                                  
+ tf.reshape_2 (TFOpLambda)   (None, 160, 192, 224, 1)     0         ['tf.compat.v1.transpose_2[0][
+                                                                    0]',                          
+                                                                     'tf.concat_2[0][0]']         
+                                                                                                  
+ tf.nn.convolution (TFOpLam  (None, 160, 192, 224, 1)     0         ['tf.reshape[0][0]']          
+ bda)                                                                                             
+                                                                                                  
+ tf.nn.convolution_3 (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.reshape_2[0][0]']        
+ ambda)                                                                                           
+                                                                                                  
+ tf.nn.convolution_1 (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.nn.convolution[0][0]']   
+ ambda)                                                                                           
+                                                                                                  
+ tf.nn.convolution_4 (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.nn.convolution_3[0][0]'] 
+ ambda)                                                                                           
+                                                                                                  
+ tf.nn.convolution_2 (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.nn.convolution_1[0][0]'] 
+ ambda)                                                                                           
+                                                                                                  
+ tf.nn.convolution_5 (TFOpL  (None, 160, 192, 224, 1)     0         ['tf.nn.convolution_4[0][0]'] 
+ ambda)                                                                                           
+                                                                                                  
+ tf.compat.v1.shape_4 (TFOp  (5,)                         0         ['tf.nn.convolution_2[0][0]'] 
+ Lambda)                                                                                          
+                                                                                                  
+ tf.compat.v1.shape_9 (TFOp  (5,)                         0         ['tf.nn.convolution_5[0][0]'] 
+ Lambda)                                                                                          
+                                                                                                  
+ tf.__operators__.getitem_3  (3,)                         0         ['tf.compat.v1.shape_4[0][0]']
+  (SlicingOpLambda)                                                                               
+                                                                                                  
+ tf.__operators__.getitem_8  (3,)                         0         ['tf.compat.v1.shape_9[0][0]']
+  (SlicingOpLambda)                                                                               
+                                                                                                  
+ tf.concat_1 (TFOpLambda)    (5,)                         0         ['tf.__operators__.getitem_2[0
+                                                                    ][0]',                        
+                                                                     'tf.__operators__.getitem_3[0
+                                                                    ][0]']                        
+                                                                                                  
+ tf.concat_3 (TFOpLambda)    (5,)                         0         ['tf.__operators__.getitem_7[0
+                                                                    ][0]',                        
+                                                                     'tf.__operators__.getitem_8[0
+                                                                    ][0]']                        
+                                                                                                  
+ tf.reshape_1 (TFOpLambda)   (None, 1, 160, 192, 224)     0         ['tf.nn.convolution_2[0][0]', 
+                                                                     'tf.concat_1[0][0]']         
+                                                                                                  
+ lambda_2 (Lambda)           (None, 160, 192, 224, 1)     0         ['tf.cast_1[0][0]']           
+                                                                                                  
+ tf.reshape_3 (TFOpLambda)   (None, 1, 160, 192, 224)     0         ['tf.nn.convolution_5[0][0]', 
+                                                                     'tf.concat_3[0][0]']         
+                                                                                                  
+ lambda_6 (Lambda)           (None, 160, 192, 224, 1)     0         ['tf.cast_4[0][0]']           
+                                                                                                  
+ tf.compat.v1.transpose_1 (  (None, 160, 192, 224, 1)     0         ['tf.reshape_1[0][0]']        
+ TFOpLambda)                                                                                      
+                                                                                                  
+ tf.math.exp (TFOpLambda)    (None, 160, 192, 224, 1)     0         ['lambda_2[0][0]']            
+                                                                                                  
+ tf.compat.v1.transpose_3 (  (None, 160, 192, 224, 1)     0         ['tf.reshape_3[0][0]']        
+ TFOpLambda)                                                                                      
+                                                                                                  
+ tf.math.exp_2 (TFOpLambda)  (None, 160, 192, 224, 1)     0         ['lambda_6[0][0]']            
+                                                                                                  
+ tf.math.multiply_2 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.compat.v1.transpose_1[0][
+ mbda)                                                              0]',                          
+                                                                     'tf.math.exp[0][0]']         
+                                                                                                  
+ tf.math.multiply_5 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.compat.v1.transpose_3[0][
+ mbda)                                                              0]',                          
+                                                                     'tf.math.exp_2[0][0]']       
+                                                                                                  
+ tf.clip_by_value (TFOpLamb  (None, 160, 192, 224, 1)     0         ['tf.math.multiply_2[0][0]']  
+ da)                                                                                              
+                                                                                                  
+ tf.random.normal_1 (TFOpLa  (None, 1, 1, 1, 1)           0         ['tf.__operators__.getitem[0][
+ mbda)                                                              0]']                          
+                                                                                                  
+ tf.clip_by_value_1 (TFOpLa  (None, 160, 192, 224, 1)     0         ['tf.math.multiply_5[0][0]']  
+ mbda)                                                                                            
+                                                                                                  
+ tf.random.normal_3 (TFOpLa  (None, 1, 1, 1, 1)           0         ['tf.__operators__.getitem_5[0
+ mbda)                                                              ][0]']                        
+                                                                                                  
+ lambda_3 (Lambda)           (None, 160, 192, 224, 1)     0         ['tf.clip_by_value[0][0]']    
+                                                                                                  
+ tf.math.exp_1 (TFOpLambda)  (None, 1, 1, 1, 1)           0         ['tf.random.normal_1[0][0]']  
+                                                                                                  
+ lambda_7 (Lambda)           (None, 160, 192, 224, 1)     0         ['tf.clip_by_value_1[0][0]']  
+                                                                                                  
+ tf.math.exp_3 (TFOpLambda)  (None, 1, 1, 1, 1)           0         ['tf.random.normal_3[0][0]']  
+                                                                                                  
+ tf.math.pow (TFOpLambda)    (None, 160, 192, 224, 1)     0         ['lambda_3[0][0]',            
+                                                                     'tf.math.exp_1[0][0]']       
+                                                                                                  
+ tf.math.pow_1 (TFOpLambda)  (None, 160, 192, 224, 1)     0         ['lambda_7[0][0]',            
+                                                                     'tf.math.exp_3[0][0]']       
+                                                                                                  
+ vxm_dense_unet_input_conca  (None, 160, 192, 224, 2)     0         ['tf.math.pow[0][0]',         
+ t (Concatenate)                                                     'tf.math.pow_1[0][0]']       
+                                                                                                  
+ vxm_dense_unet_enc_conv_0_  (None, 160, 192, 224, 64)    3520      ['vxm_dense_unet_input_concat[
+ 0 (Conv3D)                                                         0][0]']                       
+                                                                                                  
+ vxm_dense_unet_enc_conv_0_  (None, 160, 192, 224, 64)    0         ['vxm_dense_unet_enc_conv_0_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_enc_pooling  (None, 80, 96, 112, 64)      0         ['vxm_dense_unet_enc_conv_0_0_
+ _0 (MaxPooling3D)                                                  activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_enc_conv_1_  (None, 80, 96, 112, 64)      110656    ['vxm_dense_unet_enc_pooling_0
+ 0 (Conv3D)                                                         [0][0]']                      
+                                                                                                  
+ vxm_dense_unet_enc_conv_1_  (None, 80, 96, 112, 64)      0         ['vxm_dense_unet_enc_conv_1_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_enc_pooling  (None, 40, 48, 56, 64)       0         ['vxm_dense_unet_enc_conv_1_0_
+ _1 (MaxPooling3D)                                                  activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_enc_conv_2_  (None, 40, 48, 56, 64)       110656    ['vxm_dense_unet_enc_pooling_1
+ 0 (Conv3D)                                                         [0][0]']                      
+                                                                                                  
+ vxm_dense_unet_enc_conv_2_  (None, 40, 48, 56, 64)       0         ['vxm_dense_unet_enc_conv_2_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_enc_pooling  (None, 20, 24, 28, 64)       0         ['vxm_dense_unet_enc_conv_2_0_
+ _2 (MaxPooling3D)                                                  activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_enc_conv_3_  (None, 20, 24, 28, 64)       110656    ['vxm_dense_unet_enc_pooling_2
+ 0 (Conv3D)                                                         [0][0]']                      
+                                                                                                  
+ vxm_dense_unet_enc_conv_3_  (None, 20, 24, 28, 64)       0         ['vxm_dense_unet_enc_conv_3_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_enc_pooling  (None, 10, 12, 14, 64)       0         ['vxm_dense_unet_enc_conv_3_0_
+ _3 (MaxPooling3D)                                                  activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_conv_3_  (None, 10, 12, 14, 64)       110656    ['vxm_dense_unet_enc_pooling_3
+ 0 (Conv3D)                                                         [0][0]']                      
+                                                                                                  
+ vxm_dense_unet_dec_conv_3_  (None, 10, 12, 14, 64)       0         ['vxm_dense_unet_dec_conv_3_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_dec_upsampl  (None, 20, 24, 28, 64)       0         ['vxm_dense_unet_dec_conv_3_0_
+ e_3 (UpSampling3D)                                                 activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_upsampl  (None, 20, 24, 28, 128)      0         ['vxm_dense_unet_dec_upsample_
+ e_3_concat (Concatenate)                                           3[0][0]',                     
+                                                                     'vxm_dense_unet_enc_conv_3_0_
+                                                                    activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_conv_2_  (None, 20, 24, 28, 64)       221248    ['vxm_dense_unet_dec_upsample_
+ 0 (Conv3D)                                                         3_concat[0][0]']              
+                                                                                                  
+ vxm_dense_unet_dec_conv_2_  (None, 20, 24, 28, 64)       0         ['vxm_dense_unet_dec_conv_2_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_dec_upsampl  (None, 40, 48, 56, 64)       0         ['vxm_dense_unet_dec_conv_2_0_
+ e_2 (UpSampling3D)                                                 activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_upsampl  (None, 40, 48, 56, 128)      0         ['vxm_dense_unet_dec_upsample_
+ e_2_concat (Concatenate)                                           2[0][0]',                     
+                                                                     'vxm_dense_unet_enc_conv_2_0_
+                                                                    activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_conv_1_  (None, 40, 48, 56, 64)       221248    ['vxm_dense_unet_dec_upsample_
+ 0 (Conv3D)                                                         2_concat[0][0]']              
+                                                                                                  
+ vxm_dense_unet_dec_conv_1_  (None, 40, 48, 56, 64)       0         ['vxm_dense_unet_dec_conv_1_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_dec_upsampl  (None, 80, 96, 112, 64)      0         ['vxm_dense_unet_dec_conv_1_0_
+ e_1 (UpSampling3D)                                                 activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_upsampl  (None, 80, 96, 112, 128)     0         ['vxm_dense_unet_dec_upsample_
+ e_1_concat (Concatenate)                                           1[0][0]',                     
+                                                                     'vxm_dense_unet_enc_conv_1_0_
+                                                                    activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_conv_0_  (None, 80, 96, 112, 64)      221248    ['vxm_dense_unet_dec_upsample_
+ 0 (Conv3D)                                                         1_concat[0][0]']              
+                                                                                                  
+ vxm_dense_unet_dec_conv_0_  (None, 80, 96, 112, 64)      0         ['vxm_dense_unet_dec_conv_0_0[
+ 0_activation (LeakyReLU)                                           0][0]']                       
+                                                                                                  
+ vxm_dense_unet_dec_final_c  (None, 80, 96, 112, 64)      110656    ['vxm_dense_unet_dec_conv_0_0_
+ onv_0 (Conv3D)                                                     activation[0][0]']            
+                                                                                                  
+ vxm_dense_unet_dec_final_c  (None, 80, 96, 112, 64)      0         ['vxm_dense_unet_dec_final_con
+ onv_0_activation (LeakyReL                                         v_0[0][0]']                   
+ U)                                                                                               
+                                                                                                  
+ vxm_dense_unet_dec_final_c  (None, 80, 96, 112, 64)      110656    ['vxm_dense_unet_dec_final_con
+ onv_1 (Conv3D)                                                     v_0_activation[0][0]']        
+                                                                                                  
+ vxm_dense_unet_dec_final_c  (None, 80, 96, 112, 64)      0         ['vxm_dense_unet_dec_final_con
+ onv_1_activation (LeakyReL                                         v_1[0][0]']                   
+ U)                                                                                               
+                                                                                                  
+==================================================================================================
+Total params: 1331200 (5.08 MB)
+Trainable params: 1331200 (5.08 MB)
+Non-trainable params: 0 (0.00 Byte)
+__________________________________________________________________________________________________

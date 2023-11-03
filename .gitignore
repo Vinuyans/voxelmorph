@@ -1,18 +1,20 @@
 __pycache__/
-.vscode
-.devcontainer
+.vscode/
+.devcontainer/
+.github/
+
+#Data
+corr_data
+corr
+
+#Models
+/models
+*/*.h5
 
 #Scans
-crop-scans/
-scans/
-/*.nii.gz
-data/modified_average_205.nii.gz
-norm.zip
-norm
+*.nii.gz
+*.mgz
 
-# Models
-data/shapes-dice-vel-3-res-8-16-32-256f.h5
-data/brains-dice-vel-0.5-res-16-256f.h5
-
-#Telemetry
-telemetry/
+libm.tex
+*.ipynb
+torch_dist_deepgotraining.py
