@@ -1,0 +1,16 @@
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive \
+  apt-get install -y python3.10 python3-pip
+
+RUN curl -sSL https://install.python-poetry.org | python3 - --preview
+RUN pip3 install --upgrade requests
+
+RUN pip install tensorflow[and-cuda]
+RUN pip install voxelmorph
+RUN pip install protobuf==3.20
+COPY . /voxelmorph/
+COPY ./voxelmorph/py/utils.py /usr/local/lib/python3.8/dist-packages/voxelmorph/py/utils.py
+
+WORKDIR /voxelmorph
+
+ENTRYPOINT ["/bin/bash"]

@@ -4,8 +4,9 @@ __pycache__/
 .github/
 
 #Data
-corr_data
+corr-data
 corr
+maps
 
 #Models
 /models

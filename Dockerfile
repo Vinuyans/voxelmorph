@@ -93,13 +93,4 @@ ENV CPATH=/opt/valgrind-3.20.0+verrou-dev/include:${CPATH}
 ENV VERROU_COMPILED_WITH_FMA=yes
 ENV VERROU_COMPILED_WITH_QUAD=yes
 
-
-# FROM gcr.io/bazel-public/bazel:latest as TCMalloc
-# #Install TCMalloc
-# WORKDIR /tcmalloc/source/
-# RUN git clone https://github.com/google/tcmalloc.git .
-# RUN bazel test //tcmalloc/...
-
-RUN  apt-get -y install google-perftools
-
 ENTRYPOINT ["/bin/bash"]
