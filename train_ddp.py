@@ -10,7 +10,15 @@ Citations:
     Zhao, M. R. Sabuncu, J. Guttag, A.V. Dalca. IEEE TMI: Transactions on Medical Imaging. 38(8). pp
     1788-1800. 2019. 
 """
+# import scipy
+# import scipy.linalg
 import os
+import threading
+
+from matplotlib.pylab import f
+
+print(f"Rank: {os.environ['RANK']}, PID:{os.getpid()}, TID:{threading.get_native_id()}")
+
 import argparse
 import importlib
 import time
@@ -25,6 +33,8 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.distributed.optim import ZeroRedundancyOptimizer
 from torch.distributed.elastic.multiprocessing.errors import record
 from torch.utils.data import Dataset, DataLoader
+
+# from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 
@@ -52,9 +62,10 @@ parser = argparse.ArgumentParser()
 # data organization parameters
 parser.add_argument("--label-dir", nargs="+", help="path or glob pattern pointing to input label maps")
 parser.add_argument("--train-data", help="npz file with training data")
-parser.add_argument("--model-dir", default="models", help="model output directory")
+parser.add_argument("--model-dir", default="/voxelmorph/models", help="model output directory")
 parser.add_argument("--log-dir", help="optional TensorBoard log directory")
 parser.add_argument("--sub-dir", help="optional subfolder for logs and model saves")
+parser.add_argument("--load", help="Path to model to continue training from")
 
 # generation parameters
 parser.add_argument("--same-subj", action="store_true", help="generate image pairs from same label map")
@@ -99,65 +110,44 @@ args = parser.parse_args()
 @record
 def main():
     setup()
-    world_size = os.environ["WORLD_SIZE"]
-    local_rank = os.environ["LOCAL_RANK"]
+    # board
+    # if os.environ["RANK"] == "0":
+    #     # Setup Tensorboard
+    #     board = SummaryWriter()
+    world_size = int(os.environ["WORLD_SIZE"])
+    local_rank = int(os.environ["LOCAL_RANK"])
     rank = os.environ["RANK"]
     # device = torch.device("cpu")
-    device = torch.device("cpu", int(local_rank))
-    print(f"{datetime.datetime.now()} Running synthmorph on {device}; local rank:{local_rank}; global rank {rank}")
+    print(f" Rank {torch.distributed.get_rank()}", flush=True)
+    # local_rank = os.environ['LOCAL_RANK'] #alternative option
+    # print(torch.device("cpu", local_rank))  # should all return same thing
+    device = torch.device("cpu", local_rank)
+    print(
+        f"{datetime.datetime.now()} Running synthmorph on {device}; local rank:{local_rank}; global rank {rank}",
+        flush=True,
+    )
 
     # Load labels & create Synthmorph generator
     labels_in, label_maps = vxm.py.utils.load_labels(args.label_dir)
-    # gen = vxm.generators.synthmorph(
-    #     label_maps,
-    #     batch_size=args.batch_size,
-    #     same_subj=args.same_subj,  # Should be true according to paper TODO Check
-    #     flip=True,
-    # )
+    print(f"{datetime.datetime.now()} Loaded labels and created Synthmorph generator [Rank {rank}]", flush=True)
+
     in_shape = label_maps[0].shape
 
-    # # model configuration
-    # gen_args = dict(
-    #     in_shape=in_shape,
-    #     out_shape=args.out_shape,
-    #     in_label_list=labels_in,
-    #     warp_std=args.vel_std,
-    #     warp_res=args.vel_res,
-    #     blur_std=args.blur_std,
-    #     bias_std=args.bias_std,
-    #     bias_res=args.bias_res,
-    #     gamma_std=args.gamma,
-    # )
-
-    # # Create TF model to preprocess the data
-    # gen_model = None
-    # strategy = "get_strategy"
-    # with getattr(tf.distribute, strategy)().scope():
-    #     import neurite as ne
-
-    #     # generation
-    #     gen_model_1 = ne.models.labels_to_image(**gen_args, id=0)
-    #     gen_model_2 = ne.models.labels_to_image(**gen_args, id=1)
-    #     ima_1, map_1 = gen_model_1.outputs
-    #     ima_2, map_2 = gen_model_2.outputs
-
-    #     # registration
-    #     inputs = gen_model_1.inputs + gen_model_2.inputs
-    #     gen_model = tf.keras.Model(inputs, outputs=(ima_1, ima_2))
-
     # Setup Sampler and DataLoader
-    # generator = SynthGenerator(gen, gen_model, args.steps, device)
     generator = SynthGenerator(rank, args.data_dir, args.steps, device)
+    print(f"{datetime.datetime.now()} Created generator [Rank {rank}]", flush=True)
 
     sampler = DistributedSampler(
         generator,
-        # num_replicas=int(world_size),
-        # rank=int(local_rank),
+        num_replicas=world_size,
+        rank=local_rank,
         shuffle=False,
         drop_last=False,
     )
+    print(f"{datetime.datetime.now()} Created sampler [Rank {rank}]", flush=True)
 
     dataloader = DataLoader(generator, shuffle=False, sampler=sampler)
+    print(f"{datetime.datetime.now()} Created dataloader [Rank {rank}]", flush=True)
 
     # Prepare model for training
     # unet architecture
@@ -172,83 +162,127 @@ def main():
         int_downsize=args.int_downsize,
     )
 
-    logging.info(f"{datetime.datetime.now()} Created a new model , device {device}")
+    print(f"{datetime.datetime.now()} Created a new model , device {device}", flush=True)
 
     model.to(device)
+    print("Model moved to device", flush=True)
+    # , device_ids=[dist.get_rank()], output_device=dist.get_rank(),
     model = DDP(model, gradient_as_bucket_view=True)
-    model.train()
+    print("Model wrapped in DDP", flush=True)
 
     # set optimizer
     # optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     optimizer = ZeroRedundancyOptimizer(model.parameters(), optimizer_class=torch.optim.Adam, lr=args.lr)
+    print(f"{datetime.datetime.now()} Created optimizer", flush=True)
+
     # bindVerrou.verrou_display_counters()
+    initial_epoch = 0
+    # Load model params
+    if args.load:
+        checkpoint = torch.load(args.load)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        initial_epoch = checkpoint["epoch"]
+
     training_time = time.time()
-    logging.info(f"{datetime.datetime.now()} Training Stared")
+    print(f"{datetime.datetime.now()} Training Stared", flush=True)
+
+    model.train()
+    print(f"{datetime.datetime.now()} Model set to training mode", flush=True)
+
+    # TODO Can add inputs to graph
+    # if os.environ["RANK"] == "0":
+    #     board.add_graph(model)
     # training loops
-    for epoch in range(args.initial_epoch, args.epochs):
+    for epoch in range(initial_epoch, args.epochs):
+        print(f"{datetime.datetime.now()} Starting epoch {epoch}", flush=True)
         # sampler.set_epoch(epoch)
         dataloader.sampler.set_epoch(epoch)
+        print(f"{datetime.datetime.now()} Set sampler to epoch {epoch}", flush=True)
         # save model checkpoint
-        if epoch % 20 == 0:
-            torch.save(model.state_dict(), os.path.join(args.model_dir, "%04d.pt" % epoch))
+        if epoch % 10 == 0:
+            optimizer.consolidate_state_dict(to=0)
+            print(f"{datetime.datetime.now()} Consolidated state dict", flush=True)
+            dist.barrier()
+            print(f"{datetime.datetime.now()} First barrier passed", flush=True)
+            if os.environ["RANK"] == "0":
+                print(f"{datetime.datetime.now()} Saving model", flush=True)
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                    },
+                    os.path.join(args.model_dir, "%04d.pt" % epoch),
+                )
+            print(f"{datetime.datetime.now()} Model saved", flush=True)
+            dist.barrier()
+            print(f"{datetime.datetime.now()} Second barrier passed", flush=True)
 
-        epoch_loss = []
-        epoch_total_loss = []
+        step_losses = []
+        step_total_loss = []
         epoch_step_time = []
 
         for step, data in enumerate(dataloader):
+            print(f"{datetime.datetime.now()} Starting step {step}", flush=True)
             step_start_time = time.time()
 
-            # Pass the synthesized data through the TF model and turn the results into pytorch tensors
-
-            # bindVerrou.verrou_start_instrumentation()
-            # run inputs through the model to produce a warped image and flow field
-            src, trg = [tensor.squeeze(1) for tensor in data]
+            src, trg, map_2 = [tensor.squeeze(1) for tensor in data]
+            print(f"{datetime.datetime.now()} Loaded data", flush=True)
 
             # zero gradients
             optimizer.zero_grad()
+            # print(f"{datetime.datetime.now()} Zeroed gradients", flush=True)
 
             # forward pass
-            forward_start_time = time.time()
             y_pred, flow = model(src, trg)
-            print(f"Compute time for forward: f{time.time() - forward_start_time }s")
+            # print(f"{datetime.datetime.now()} Forward pass done", flush=True)
 
             # calculate total loss
-            # maybe add // nb_devices
-            loss_start_time = time.time()
-            # const = torch.ones(args.batch_size // int(world_size)).squeeze()
-            # Dice loss defined as 1 - Dice, vxm Dice returns a negative number so the constant represented the 1
-            loss_dice = vxm.losses.Dice().loss(trg, y_pred) + torch.ones(1)
+            # const = args.steps // world_size
+            const = 1
+            loss_dice = vxm.losses.Dice().loss(map_2, y_pred) + const
+            # print(f"{datetime.datetime.now()} Calculated Dice loss", flush=True)
             loss_grad = vxm.losses.Grad("l2", loss_mult=args.reg_param).loss(None, flow)
+            # print(f"{datetime.datetime.now()} Calculated Gradient Descent loss", flush=True)
+            # See https://stackoverflow.com/questions/53994625/how-can-i-process-multi-loss-in-pytorch
             loss = loss_dice + loss_grad
             loss_list = [loss_dice, loss_grad]
-            epoch_loss.append(loss_list)
-            epoch_total_loss.append(loss.item())
-            print(f"Compute time for loss: f{time.time() - loss_start_time }s")
+            step_losses.append(loss_list)
+            step_total_loss.append(loss.item())
 
             # backpropagate and optimize
-            optim_start_time = time.time()
             loss.backward()
+            # print(f"{datetime.datetime.now()} Backpropagated and optimized", flush=True)
             optimizer.step()
-            print(f"Compute time for loss: f{time.time() - optim_start_time }s")
-            # bindVerrou.verrou_stop_instrumentation()
+            print(f"{datetime.datetime.now()} Step done", flush=True)
+
             # get compute time
-            print(f"Compute time for step: f{time.time() - step_start_time}s")
+            print(f"Rank {rank}: Compute time for step: f{time.time() - step_start_time}s", flush=True)
             epoch_step_time.append(time.time() - step_start_time)
 
         # print epoch info
         epoch_info = "Epoch %d/%d" % (epoch + 1, args.epochs)
         time_info = "%.4f sec/step" % np.mean(epoch_step_time)
         epoch_loss_ungrad = list()
-        for step in epoch_loss:
+        for step in step_losses:
             epoch_loss_ungrad.append([loss.detach().numpy() for loss in step])
         losses_info = ", ".join(["%.4e" % f for f in np.mean(epoch_loss_ungrad, axis=0)])
-        loss_info = "loss: %.4e  (%s)" % (np.mean(epoch_total_loss), losses_info)
+        loss_info = "loss: %.4e  (%s)" % (np.mean(step_total_loss), losses_info)
         if os.environ["RANK"] == "0":
-            with open("loss/loss_data.csv", "a") as out_file:
+            with open("/voxelmorph/loss/loss_data.csv", "a") as out_file:
                 writer = csv.writer(out_file)
-                writer.writerow((epoch_info, time_info, loss_info))
+                writer.writerow(
+                    (
+                        epoch_info,
+                        time_info,
+                        np.mean(step_total_loss),
+                        step_losses[-1][0].item(),
+                        step_losses[-1][1].item(),
+                    )
+                )
         print(" - ".join((epoch_info, time_info, loss_info)), flush=True)
+        dist.barrier(group=torch.distributed.group.WORLD)
 
     # final model save
     dist.barrier()
@@ -268,22 +302,20 @@ def setup():
     os.makedirs(args.model_dir, exist_ok=True)
     # initialize the process group
     print(f'Local Rank {os.environ["LOCAL_RANK"]}, Rank {os.environ["RANK"]}, World Size {os.environ["WORLD_SIZE"]}')
-    # dist.init_process_group("gloo", world_size=(int(["WORLD_SIZE"])))
     dist.init_process_group("gloo")
     if os.environ["RANK"] == "0":
-        with open("loss/loss_data.csv", "w") as out_file:
+        # Create flie to write loss
+        with open("/voxelmorph/loss/loss_data.csv", "a") as out_file:
             writer = csv.writer(out_file)
-            writer.writerow(("Epoch", "Sec/Epoch", "Loss"))
+            # writer.writerow(("Epoch", "Sec/Epoch", "Loss (Total)", "Loss (Dice)", "Loss (Grad)"))
     dist.barrier()
 
 
 @record
 class SynthGenerator(Dataset):
-    def __init__(self, rank, path, steps, device):
+    def __init__(self, rank: str, path: str, steps: int, device: torch.device):
         self.rank = rank
         self.path = os.path.join(path, f"cpu{self.rank}")
-        # self.gen = generator
-        # self.gen_model = gen_model
         self.epoch_len = steps
         self.device = device
 
@@ -291,21 +323,39 @@ class SynthGenerator(Dataset):
         return self.epoch_len
 
     def __getitem__(self, index):
-        # data = self.gen_model(next(self.gen)[0])
-        # data = [tensor.numpy() for tensor in data]
+        """
+        Gets the npz file created by the data generation script and loads it.
+        index is never used since rank is used to determine which data to take,
+        but it is needed for the function definition
+
+        Args:
+            index : Not used
+
+        Returns:
+            tuple[Tensor. Tensor, Tensor]: returns the src, trg and map_2 that was generated as Tensors
+        """
         wait_time = time.time()
+        print(f"Rank: {self.rank} waiting for data", flush=True)
         while not os.path.exists(os.path.join(self.path, "data.npz.lock")):
+            print(f"Rank: {self.rank} waiting for data", flush=True)
             time.sleep(1)
+        # print(f"Rank: {self.rank} waited {time.time() - wait_time}s for lock", flush=True)
         data = np.load(os.path.join(self.path, "data.npz"))
-        print(f"Rank: {self.rank} waited {time.time() - wait_time}s for data")
-        src = torch.from_numpy(data["src"]).to(self.device).float().permute(0, 4, 1, 2, 3)
-        trg = torch.from_numpy(data["trg"]).to(self.device).float().permute(0, 4, 1, 2, 3)
-        os.remove(os.path.join(self.path, "data.npz"))
-        os.remove(os.path.join(self.path, "data.npz.lock"))
-        return src, trg
+        # print(f"Rank: {self.rank} waited {time.time() - wait_time}s for data", flush=True)
+        try:
+            src = torch.from_numpy(data["src"]).to(self.device).float().permute(0, 4, 1, 2, 3)
+            trg = torch.from_numpy(data["trg"]).to(self.device).float().permute(0, 4, 1, 2, 3)
+            map_2 = torch.from_numpy(data["map_2"]).to(self.device).float().permute(0, 4, 1, 2, 3)
+            os.remove(os.path.join(self.path, "data.npz"))
+            os.remove(os.path.join(self.path, "data.npz.lock"))
+            return src, trg, map_2
+        except:
+            os.remove(os.path.join(self.path, "data.npz"))
+            os.remove(os.path.join(self.path, "data.npz.lock"))
 
 
 if __name__ == "__main__":
     os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
     os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
+    torch.manual_seed(0)
     main()
