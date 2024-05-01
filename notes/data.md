@@ -62,6 +62,8 @@ recon-all -verbose -sd /root -subjid sub-01 \
 ```
 And then cropped as such:
 ```python
+import nibabel as nib
+
 img = nib.load('subject.mgz')
 #160,192,224,
 data = img.get_fdata()

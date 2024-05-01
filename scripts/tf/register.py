@@ -28,9 +28,10 @@ distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, e
 implied. See the License for the specific language governing permissions and limitations under the
 License.
 """
-import sys
-import tracemalloc
-tracemalloc.start()
+# import sys
+# import tracemalloc
+
+# tracemalloc.start()
 # sys.path.append("/voxelmorph/synchroLib")
 # from verrouPyBinding import bindingVerrouCLib
 
@@ -50,9 +51,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--moving", required=True, help="moving image (source) filename")
 parser.add_argument("--fixed", required=True, help="fixed image (target) filename")
 parser.add_argument("--moved", required=True, help="warped image output filename")
-parser.add_argument(
-    "--model", required=True, help="keras model for nonlinear registration"
-)
+parser.add_argument("--model", required=True, help="keras model for nonlinear registration")
 parser.add_argument("--warp", help="output warp deformation filename")
 parser.add_argument("-g", "--gpu", help="GPU number(s) - if not supplied, CPU is used")
 parser.add_argument(
@@ -67,9 +66,7 @@ device, nb_devices = vxm.tf.utils.setup_device(args.gpu)
 
 # load moving and fixed images
 add_feat_axis = not args.multichannel
-moving = vxm.py.utils.load_volfile(
-    args.moving, add_batch_axis=True, add_feat_axis=add_feat_axis
-)
+moving = vxm.py.utils.load_volfile(args.moving, add_batch_axis=True, add_feat_axis=add_feat_axis)
 fixed, fixed_affine = vxm.py.utils.load_volfile(
     args.fixed, add_batch_axis=True, add_feat_axis=add_feat_axis, ret_affine=True
 )
@@ -81,7 +78,6 @@ with tf.device(device):
     # load model and predict
     config = dict(inshape=inshape, input_model=None)
     model = vxm.networks.VxmDense.load(args.model, **config)
-
     # bindVerrou.verrou_start_instrumentation()
     warp = model.register(moving, fixed)
     moved = vxm.networks.Transform(inshape, nb_feats=nb_feats).predict([moving, warp])

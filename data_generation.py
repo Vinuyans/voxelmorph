@@ -70,13 +70,13 @@ def build_generators():
 
         # registration
         inputs = gen_model_1.inputs + gen_model_2.inputs
-        gen_model = tf.keras.Model(inputs, outputs=(ima_1, ima_2))
+        gen_model = tf.keras.Model(inputs, outputs=(ima_1, ima_2, map_2))
     return gen_model, gen
 
 
 def save_results(model, gen, path: str):
-    src, trg = model(next(gen)[0])
-    np.savez_compressed(os.path.join(path, args.filename), src=src.numpy(), trg=trg.numpy())
+    src, trg, map_2 = model(next(gen)[0])
+    np.savez_compressed(os.path.join(path, args.filename), src=src.numpy(), trg=trg.numpy(), map_2=map_2.numpy())
     with open(os.path.join(path, args.filename + ".lock"), "w") as file:
         pass
 
@@ -104,5 +104,3 @@ if __name__ == "__main__":
                 print(f"Writting to CPU:{cpu}")
                 save_results(model, gen, paths[cpu])
                 print(f"Data written for CPU:{cpu}")
-
-
